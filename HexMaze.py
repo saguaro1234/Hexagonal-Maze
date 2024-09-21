@@ -2,27 +2,27 @@ import pygame
 from random import choice
 import collections
 import math
-RES = WIDTH, HEIGHT = 1202,902
+import pygame.freetype
+RES = WIDTH, HEIGHT = 1202, 902
 TILE = 50
-cols,rows = WIDTH // TILE, HEIGHT // TILE
+cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 
+
 class Hexagon:
-    def __init__(self, q_coord, r_coord, s_coord, value=0, undo_val=0):
+    def __init__(self, q_coord, r_coord, s_coord, value=0):
         """initializes class"""
         self.q = q_coord
         self.r = r_coord
         self.s = s_coord
         self.visited = False
-        self.walls = {1: True, 2:True, 3:True, 4:True, 5:True, 6:True}
-        self.open_neighbors =[]
+        self.walls = {1: True, 2: True, 3: True, 4: True, 5: True, 6: True}
+        self.open_neighbors = []
         self.grid = (q, r, s)
-        self.empty = False
         self.value = value
-        self.undo_val = undo_val
         self.neighbors = [(self.q, self.r + 1, self.s - 1),
                           (self.q, self.r - 1, self.s + 1),
                           (self.q + 1, self.r - 1, self.s),
@@ -33,10 +33,6 @@ class Hexagon:
     def get_val(self):
         """returns value of tile"""
         return self.value
-
-    def get_undo_val(self):
-        """returns undo value"""
-        return self.undo_val
 
     def set_val(self, num):
         """sets value of tile"""
@@ -52,14 +48,12 @@ class Hexagon:
         for neighbor in self.neighbors:
             if neighbor in hex_list_grid:
                 place = hex_list_grid.index(neighbor)
-                thing = hex_list[place]
-                if not thing.visited:
+                spot = hex_list[place]
+                if not spot.visited:
                     neighbors.append(hex_list[place])
         return choice(neighbors) if neighbors else False
 
-
-
-    def draw(self, size, fill = "turquoise"):
+    def draw(self, size, fill="turquoise"):
         if self.value == 0:
             fill = "turquoise"
         elif self.value == 1:
@@ -78,28 +72,32 @@ class Hexagon:
         if self.walls[1]:
             pygame.draw.line(sc, pygame.Color('black'),
                 (coord.x + size * math.sin(7 * 3.14 / 6) + hi, coord.y + size * math.cos(7 * 3.14 / 6) + wi),
-                (coord.x + size * math.sin(5 * 3.14 / 6) + hi, coord.y + size * math.cos(5 * 3.14 / 6) + wi),3)
+                (coord.x + size * math.sin(5 * 3.14 / 6) + hi, coord.y + size * math.cos(5 * 3.14 / 6) + wi), 3)
         if self.walls[2]:
             pygame.draw.line(sc, pygame.Color("black"),
-        (coord.x + size * math.sin(5 * 3.14 / 6) + hi, coord.y + size * math.cos(5 * 3.14 / 6) + wi) ,
-        (coord.x + size * math.sin(3.14 / 2) + hi, coord.y + size * math.cos(3.14 / 2) + wi), 3)
+                (coord.x + size * math.sin(5 * 3.14 / 6) + hi, coord.y + size * math.cos(5 * 3.14 / 6) + wi),
+                (coord.x + size * math.sin(3.14 / 2) + hi, coord.y + size * math.cos(3.14 / 2) + wi), 3)
         if self.walls[3]:
             pygame.draw.line(sc, pygame.Color("black"),
-        (coord.x + size * math.sin(3.14 / 2) + hi, coord.y + size * math.cos(3.14 / 2) + wi),
-        (coord.x + size * math.sin(3.14 / 6) + hi, coord.y + size * math.cos(3.14 / 6) + wi),3)
+            (coord.x + size * math.sin(3.14 / 2) + hi, coord.y + size * math.cos(3.14 / 2) + wi),
+            (coord.x + size * math.sin(3.14 / 6) + hi, coord.y + size * math.cos(3.14 / 6) + wi),3)
         if self.walls[4]:
             pygame.draw.line(sc, pygame.Color("black"),
-        (coord.x + size * math.sin(3.14 / 6) + hi, coord.y + size * math.cos(3.14 / 6) + wi),
-        (coord.x + size * math.sin(11 * 3.14 / 6) + hi, coord.y + size * math.cos(11 * 3.14 / 6) + wi) ,3)
+            (coord.x + size * math.sin(3.14 / 6) + hi, coord.y + size * math.cos(3.14 / 6) + wi),
+            (coord.x + size * math.sin(11 * 3.14 / 6) + hi, coord.y + size * math.cos(11 * 3.14 / 6) + wi) ,3)
         if self.walls[5]:
             pygame.draw.line(sc, pygame.Color("black"),
-        (coord.x + size * math.sin(11 * 3.14 / 6) + hi, coord.y + size * math.cos(11 * 3.14 / 6) + wi),
-        (coord.x + size * math.sin(3 * 3.14 / 2) + hi, coord.y + size * math.cos(3 * 3.14 / 2) + wi),3)
+            (coord.x + size * math.sin(11 * 3.14 / 6) + hi, coord.y + size * math.cos(11 * 3.14 / 6) + wi),
+            (coord.x + size * math.sin(3 * 3.14 / 2) + hi, coord.y + size * math.cos(3 * 3.14 / 2) + wi),3)
         if self.walls[6]:
             pygame.draw.line(sc, pygame.Color("black"),
         (coord.x + size * math.sin(3 * 3.14 / 2) + hi, coord.y + size * math.cos(3 * 3.14 / 2) + wi),
         (coord.x + size * math.sin(7 * 3.14 / 6) + hi, coord.y + size * math.cos(7 * 3.14 / 6) + wi),3)
+
+
 Point = collections.namedtuple("Point", ["x", "y"])
+
+
 def hex_to_pixel(h):
     """converts hex grid to pixel screen location"""
     x = (3 / 2 * h.q) * 38
@@ -114,11 +112,12 @@ def pixel_to_flat_hex(point):
     return round(q_coord), round(r_coord)
 
 
-
 hi = HEIGHT / 2
 wi = WIDTH / 2
 
+
 def remove_walls(current, next):
+    """removes walls as maze path traverses them"""
     if next.q < current.q:
         if next.s > current.s:
             current.walls[6] = False
@@ -141,6 +140,7 @@ def remove_walls(current, next):
             current.walls[3] = False
             next.walls[6] = False
 
+
 def get_mouse():
     """takes a mouse click location and converts to hex grid location"""
     mouse_pos = pygame.mouse.get_pos()
@@ -149,7 +149,13 @@ def get_mouse():
     return mouse
 
 
-stack = []
+# Sets up win message to be displayed when maze is completed
+pygame.font.init()
+my_font = pygame.font.SysFont('Comic Sans MS', 100)
+text_surface = my_font.render('', False, (0, 0, 0))
+
+
+# Initializes grid of hexagons
 hex_list = []
 for q in range(-6, 7):
     for r in range(-6, 7):
@@ -159,9 +165,11 @@ for q in range(-6, 7):
                 hex_list.append(cell)
 hex_list_grid = [square.grid for square in hex_list]
 
+
+# Initializes search of hex grid, sets start and end points
 current_cell = hex_list[0]
 current_cell.set_val(1)
-end_point= choice(hex_list)
+end_point = choice(hex_list)
 end_point.set_val(2)
 stack = []
 while True:
@@ -170,6 +178,7 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
+
     [hexagon.draw(39) for hexagon in hex_list]
     current_cell.visited = True
     next_cell = current_cell.viable_neighbors()
@@ -188,9 +197,12 @@ while True:
         if (thing.print_coord()[0], thing.print_coord()[1]) == (new_mouse_pos[0], new_mouse_pos[1]):
             for open_cell in thing.open_neighbors:
                 if open_cell.get_val() == 1:
+                    if thing.get_val() == 2:
+                        thing.set_val(1)
+                        text_surface = my_font.render('Solved', False, (0, 0, 0))
                     thing.set_val(1)
 
-
+        sc.blit(text_surface, (cols, rows))
 
     pygame.display.flip()
     clock.tick(50)
